@@ -9,6 +9,8 @@ class Cell:
         self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
         self.visited = False
         self.grid_cells = grid_cells
+        self.is_entry = False
+        self.is_exit = False
 
     def draw_current_cell(self):
         x, y = self.x * self.tile, self.y * self.tile
@@ -16,18 +18,23 @@ class Cell:
         
     def draw(self):
         x, y = self.x * self.tile, self.y * self.tile
-        
+
         if self.visited:
             pygame.draw.rect(self.sc, pygame.Color('black'), (x, y, self.tile, self.tile))
 
-        if self.walls['top']:
-            pygame.draw.line(self.sc, pygame.Color('purple'), (x, y), (x + self.tile, y), 2)
-        if self.walls['right']:
-            pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y), (x + self.tile, y + self.tile), 2)
-        if self.walls['bottom']:
-            pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y + self.tile), (x, y + self.tile), 2)  
-        if self.walls['left']:
-            pygame.draw.line(self.sc, pygame.Color('purple'), (x, y + self.tile), (x, y), 2)   
+        if self.is_entry:
+            pygame.draw.rect(self.sc, pygame.Color('green'), (x, y, self.tile, self.tile))
+        elif self.is_exit:
+            pygame.draw.rect(self.sc, pygame.Color('red'), (x, y, self.tile, self.tile))
+        else:
+            if self.walls['top']:
+                pygame.draw.line(self.sc, pygame.Color('purple'), (x, y), (x + self.tile, y), 2)
+            if self.walls['right']:
+                pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y), (x + self.tile, y + self.tile), 2)
+            if self.walls['bottom']:
+                pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y + self.tile), (x, y + self.tile), 2)
+            if self.walls['left']:
+                pygame.draw.line(self.sc, pygame.Color('purple'), (x, y + self.tile), (x, y), 2)
 
     def check_cell(self, x, y):
         if x < 0 or x > self.cols - 1 or y < 0 or y > self.rows - 1:

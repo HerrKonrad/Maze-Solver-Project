@@ -34,6 +34,30 @@ current_cell = grid_cells[0]
 stack = []
 colors, color = [], 40
 
+start_end_choosen = False
+maze_solved = False
+
+start_cell = None
+end_cell = None
+
+def choose_entry_exit():
+        print('Stack is empty, now choosing entry and exit cells')
+        # Choose the start cell randomly from the border cells
+        start_candidates = [cell for cell in grid_cells if cell.x == 0 or cell.x == cols - 1 or cell.y == 0 or cell.y == rows - 1]
+        s_cell = choice(start_candidates)
+
+        # Choose the end cell randomly from the border cells excluding the start cell
+        end_candidates = [cell for cell in start_candidates if cell != s_cell]
+        e_cell = choice(end_candidates)
+
+        # Defining the entry and exit cells
+        s_cell.is_entry = True
+        e_cell.is_exit = True
+
+        # Now we can draw the entry as green and the exit as red
+        pygame.draw.rect(sc, (0, 255, 0), (s_cell.x * TILE, s_cell.y * TILE, TILE, TILE))
+        pygame.draw.rect(sc, (255, 0, 0), (e_cell.x * TILE, e_cell.y * TILE, TILE, TILE))
+        return s_cell, e_cell
 
 while True:
     sc.fill(pygame.Color('darkslategray'))
@@ -44,22 +68,36 @@ while True:
     
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
-    current_cell.draw_current_cell()
+    #pygame.draw.rect(sc, (0, 255, 0), (current_cell.x * TILE, current_cell.y * TILE, TILE, TILE))
    # [pygame.draw.rect(sc, colors[i], (cell.x * TILE + 5, cell.y * TILE + 5, 
-   #                                  TILE - 10, TILE -10), border_radius=12) for i, cell in enumerate(stack)]
-
+    #                                 TILE - 10, TILE -10), border_radius=12) for i, cell in enumerate(stack)]
+ 
     next_cell = current_cell.check_neighbors()
     if next_cell:
+        print(' X: ' + str(current_cell.x) + ' Y: ' + str(current_cell.y) +
+                            'Left: ' + str(current_cell.walls['left']) + ' Right: ' + str(current_cell.walls['right']) + ' Top: ' + str(current_cell.walls['top']) + ' Bottom: ' + str(current_cell.walls['bottom']))    
         next_cell.visited = True
         stack.append(current_cell)
         colors.append((min(color, 255), 10, 100))
         color += 1
         remove_walls(current_cell, next_cell)
         current_cell = next_cell
+        
+       
     elif stack:
+        #current_cell.is_exit = True
         current_cell = stack.pop()   
-        #current_cell.remove_walls(next_cell)
-        #current_cell = next_cell
+    # Now we can randomly choose the entry and exit cell
+    if len(stack) == 0 and not start_end_choosen:
+        start_cell, end_cell = choose_entry_exit()
+        print('Start cell: ' + str(start_cell.x) + ' ' + str(start_cell.y))
+        print('End cell: ' + str(end_cell.x) + ' ' + str(end_cell.y))
+        start_end_choosen = True
+
+    if start_end_choosen and maze_solved == False:
+        # Now we can start solving the maze
+        print('Solving the maze...')
+        maze_solved = True
     
     pygame.display.flip()
-    clock.tick(100)
+    clock.tick(500)
