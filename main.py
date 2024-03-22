@@ -1,12 +1,14 @@
 import pygame
 from random import choice
 from cell import Cell
+from maze_solver import Maze_Solver
 
 RES = WIDTH, HEIGHT = 800, 640
-TILE = 40
+TILE = 50
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 pygame.init()
+font = pygame.font.Font(None, 28)
 sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 
@@ -29,7 +31,7 @@ def remove_walls(current, next):
 grid_cells = []
 for row in range(rows):
     for col in range(cols):
-        grid_cells.append(Cell(col, row, TILE, sc, cols, rows, grid_cells))
+        grid_cells.append(Cell(col, row, TILE, sc, cols, rows, grid_cells, font))
 current_cell = grid_cells[0]
 stack = []
 colors, color = [], 40
@@ -54,9 +56,9 @@ def choose_entry_exit():
         s_cell.is_entry = True
         e_cell.is_exit = True
 
-        # Now we can draw the entry as green and the exit as red
-        pygame.draw.rect(sc, (0, 255, 0), (s_cell.x * TILE, s_cell.y * TILE, TILE, TILE))
-        pygame.draw.rect(sc, (255, 0, 0), (e_cell.x * TILE, e_cell.y * TILE, TILE, TILE))
+        # Now we define the entry cell as the number 1 of the maze resolution algorithm
+        s_cell.number = 1
+
         return s_cell, e_cell
 
 while True:
@@ -68,14 +70,9 @@ while True:
     
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
-    #pygame.draw.rect(sc, (0, 255, 0), (current_cell.x * TILE, current_cell.y * TILE, TILE, TILE))
-   # [pygame.draw.rect(sc, colors[i], (cell.x * TILE + 5, cell.y * TILE + 5, 
-    #                                 TILE - 10, TILE -10), border_radius=12) for i, cell in enumerate(stack)]
- 
+
     next_cell = current_cell.check_neighbors()
     if next_cell:
-        print(' X: ' + str(current_cell.x) + ' Y: ' + str(current_cell.y) +
-                            'Left: ' + str(current_cell.walls['left']) + ' Right: ' + str(current_cell.walls['right']) + ' Top: ' + str(current_cell.walls['top']) + ' Bottom: ' + str(current_cell.walls['bottom']))    
         next_cell.visited = True
         stack.append(current_cell)
         colors.append((min(color, 255), 10, 100))
@@ -97,7 +94,9 @@ while True:
     if start_end_choosen and maze_solved == False:
         # Now we can start solving the maze
         print('Solving the maze...')
-        maze_solved = True
-    
+        maze_solver = Maze_Solver(grid_cells, start_cell, end_cell)
+        maze_solved = maze_solver.dfs_resolution()
+
+
     pygame.display.flip()
     clock.tick(500)

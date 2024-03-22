@@ -3,7 +3,7 @@ from random import choice
 
 
 class Cell:
-    def __init__(self, x, y, tile, sc, cols, rows, grid_cells):
+    def __init__(self, x, y, tile, sc, cols, rows, grid_cells, font, number=None):
         self.x, self.y, self.tile, self.sc, self.cols, self.rows = x, y, tile, sc, cols, rows
         self.sc = sc
         self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
@@ -11,20 +11,23 @@ class Cell:
         self.grid_cells = grid_cells
         self.is_entry = False
         self.is_exit = False
+        self.font = font
+        self.number = number
+        self.analyzed = False
 
     def draw_current_cell(self):
         x, y = self.x * self.tile, self.y * self.tile
         pygame.draw.rect(self.sc, pygame.Color('saddlebrown'), (x + 2, y + 2, self.tile - 2, self.tile - 2))
         
     def draw(self):
+        
         x, y = self.x * self.tile, self.y * self.tile
 
         if self.visited:
             pygame.draw.rect(self.sc, pygame.Color('black'), (x, y, self.tile, self.tile))
-
-        if self.is_entry:
-            pygame.draw.rect(self.sc, pygame.Color('green'), (x, y, self.tile, self.tile))
-        elif self.is_exit:
+        #if self.is_entry:
+        #    pygame.draw.rect(self.sc, pygame.Color('green'), (x, y, self.tile, self.tile))
+        if self.is_exit:
             pygame.draw.rect(self.sc, pygame.Color('red'), (x, y, self.tile, self.tile))
         else:
             if self.walls['top']:
@@ -35,12 +38,50 @@ class Cell:
                 pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y + self.tile), (x, y + self.tile), 2)
             if self.walls['left']:
                 pygame.draw.line(self.sc, pygame.Color('purple'), (x, y + self.tile), (x, y), 2)
+        
+        if self.number is not None:
+            text_surface = self.font.render(str(self.number), True, pygame.Color('white'))
+            text_rect = text_surface.get_rect(center=(x + self.tile // 2, y + self.tile // 2))
+            self.sc.blit(text_surface, text_rect)
 
     def check_cell(self, x, y):
         if x < 0 or x > self.cols - 1 or y < 0 or y > self.rows - 1:
             return False
         find_index = lambda x, y: x + y * self.cols
         return self.grid_cells[find_index(x, y)]
+    
+    def verify_next_cells(self):
+        neighbors = []
+
+        # Verify if the cell has neighbors and if there are no walls
+        if not self.walls['top']:
+            top_cell = self.check_cell(self.x, self.y - 1)
+            if top_cell and top_cell.analyzed == False:
+                neighbors.append(top_cell)
+                #top_cell.analyzed = True
+
+        if not self.walls['right']:
+            right_cell = self.check_cell(self.x + 1, self.y)
+            if right_cell and right_cell.analyzed == False:
+                neighbors.append(right_cell)
+                #right_cell.analyzed = True
+
+        if not self.walls['bottom']:
+            bottom_cell = self.check_cell(self.x, self.y + 1)
+            if bottom_cell and bottom_cell.analyzed == False:
+                neighbors.append(bottom_cell)
+               # bottom_cell.analyzed = True
+
+        if not self.walls['left']:
+            left_cell = self.check_cell(self.x - 1, self.y)
+            if left_cell and left_cell.analyzed == False:
+                neighbors.append(left_cell)
+                #left_cell.analyzed = True
+        
+        self.analyzed = True
+
+        return neighbors
+
         
     def check_neighbors(self):
         neighbors = []
