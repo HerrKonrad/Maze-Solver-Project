@@ -14,16 +14,19 @@ class Cell:
         self.font = font
         self.number = number
         self.analyzed = False
+        self.is_dfs_path = False
 
     def draw_current_cell(self):
         x, y = self.x * self.tile, self.y * self.tile
-        pygame.draw.rect(self.sc, pygame.Color('saddlebrown'), (x + 2, y + 2, self.tile - 2, self.tile - 2))
+        pygame.draw.rect(self.sc, pygame.Color('saddlebrown'), (x + 3, y + 3, self.tile - 3, self.tile - 3))
         
     def draw(self):
         
         x, y = self.x * self.tile, self.y * self.tile
 
-        if self.visited:
+        if self.is_dfs_path:
+            pygame.draw.rect(self.sc, pygame.Color('grey'), (x, y, self.tile, self.tile))
+        elif self.visited:
             pygame.draw.rect(self.sc, pygame.Color('black'), (x, y, self.tile, self.tile))
         if self.is_entry:
             pygame.draw.rect(self.sc, pygame.Color('green'), (x, y, self.tile, self.tile))
@@ -31,13 +34,13 @@ class Cell:
             pygame.draw.rect(self.sc, pygame.Color('red'), (x, y, self.tile, self.tile))
        
         if self.walls['top']:
-            pygame.draw.line(self.sc, pygame.Color('purple'), (x, y), (x + self.tile, y), 2)
+            pygame.draw.line(self.sc, pygame.Color('purple'), (x, y), (x + self.tile, y), 3)
         if self.walls['right']:
-            pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y), (x + self.tile, y + self.tile), 2)
+            pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y), (x + self.tile, y + self.tile), 3)
         if self.walls['bottom']:
-            pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y + self.tile), (x, y + self.tile), 2)
+            pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y + self.tile), (x, y + self.tile), 3)
         if self.walls['left']:
-            pygame.draw.line(self.sc, pygame.Color('purple'), (x, y + self.tile), (x, y), 2)
+            pygame.draw.line(self.sc, pygame.Color('purple'), (x, y + self.tile), (x, y), 3)
         
         if self.number is not None:
             text_surface = self.font.render(str(self.number), True, pygame.Color('white'))

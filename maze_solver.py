@@ -16,38 +16,28 @@ class Maze_Solver:
         if next is not None:
             path_stack.append(next)
             while next != self.start_cell:
+                next.is_dfs_path = True
                 next = next.verify_next_cell_dfs()
                 path_stack.append(next)
 
-        print('Path stack: ', )
-        for cell in path_stack:
-            print(cell.number)
-
-        
-    
-                    
     def dfs_resolution(self):
         print('Starting DFS resolution')
+        if self.start_cell is None or self.end_cell is None:
+            return False
         self.stack.append(self.start_cell)
         while len(self.stack) > 0:
             current_cell = self.stack[-1]
-            #print('Current cell:', current_cell.x, current_cell.y)
             if not current_cell.analyzed:
                     self.counting += 1
                     current_cell.number = self.counting
-                    #print('Current cell number:', current_cell.number)
-            if current_cell == self.end_cell:
-                print('End cell reached')
-                self.maze_solved = True
-                break
+          
+            # Check if the current cell has any neighbours
+            neighbours = current_cell.verify_next_cells()
+            if len(neighbours) == 0:
+                self.stack.pop()
             else:
-                # Check if the current cell has any neighbours
-                neighbours = current_cell.verify_next_cells()
-                if len(neighbours) == 0:
-                    self.stack.pop()
-                else:
-                    next_cell = neighbours[0]
-                    self.stack.append(next_cell)
+                next_cell = neighbours[0]
+                self.stack.append(next_cell)
         
 
-        return self.maze_solved
+        return True

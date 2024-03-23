@@ -1,16 +1,22 @@
 import pygame
+import pygame_menu
 from random import choice
 from cell import Cell
 from maze_solver import Maze_Solver
 
 RES = WIDTH, HEIGHT = 800, 640
-TILE = 60
+TILE = 50
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 pygame.init()
+pygame.display.set_caption('Maze Solver')
 font = pygame.font.Font(None, 28)
 sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
+
+menu = pygame_menu.Menu('Welcome', 400, 300,
+                       theme=pygame_menu.themes.THEME_BLUE)
+
 
 def remove_walls(current, next):
     dx = current.x - next.x
@@ -60,13 +66,28 @@ def choose_entry_exit():
         s_cell.number = 1
 
         return s_cell, e_cell
+'''
+def set_difficulty(value, difficulty):
+    # Do the job here !
+    pass
 
+def start_the_game():
+    # Do the job here !
+    pass
+
+menu.add.selector('Difficulty :', [('Hard', 1), ('Easy', 2)], onchange=set_difficulty)
+menu.add.button('Start', start_the_game)
+menu.add.button('Quit', pygame_menu.events.EXIT)
+menu.mainloop(sc)
+'''
 while True:
     sc.fill(pygame.Color('darkslategray'))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
+    
+    
     
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
@@ -75,14 +96,11 @@ while True:
     if next_cell:
         next_cell.visited = True
         stack.append(current_cell)
-        colors.append((min(color, 255), 10, 100))
-        color += 1
         remove_walls(current_cell, next_cell)
         current_cell = next_cell
         
        
     elif stack:
-        #current_cell.is_exit = True
         current_cell = stack.pop()   
     # Now we can randomly choose the entry and exit cell
     if len(stack) == 0 and not start_end_choosen:
@@ -100,4 +118,4 @@ while True:
 
 
     pygame.display.flip()
-    clock.tick(500)
+    #clock.tick(500)
