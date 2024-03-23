@@ -4,7 +4,7 @@ from cell import Cell
 from maze_solver import Maze_Solver
 
 RES = WIDTH, HEIGHT = 800, 640
-TILE = 50
+TILE = 60
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 pygame.init()
@@ -96,6 +96,7 @@ while True:
         print('Solving the maze...')
         maze_solver = Maze_Solver(grid_cells, start_cell, end_cell)
         maze_solved = maze_solver.dfs_resolution()
+        maze_solver.create_dfs_path()
 
 
     pygame.display.flip()

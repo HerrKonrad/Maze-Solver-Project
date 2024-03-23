@@ -25,19 +25,19 @@ class Cell:
 
         if self.visited:
             pygame.draw.rect(self.sc, pygame.Color('black'), (x, y, self.tile, self.tile))
-        #if self.is_entry:
-        #    pygame.draw.rect(self.sc, pygame.Color('green'), (x, y, self.tile, self.tile))
+        if self.is_entry:
+            pygame.draw.rect(self.sc, pygame.Color('green'), (x, y, self.tile, self.tile))
         if self.is_exit:
             pygame.draw.rect(self.sc, pygame.Color('red'), (x, y, self.tile, self.tile))
-        else:
-            if self.walls['top']:
-                pygame.draw.line(self.sc, pygame.Color('purple'), (x, y), (x + self.tile, y), 2)
-            if self.walls['right']:
-                pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y), (x + self.tile, y + self.tile), 2)
-            if self.walls['bottom']:
-                pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y + self.tile), (x, y + self.tile), 2)
-            if self.walls['left']:
-                pygame.draw.line(self.sc, pygame.Color('purple'), (x, y + self.tile), (x, y), 2)
+       
+        if self.walls['top']:
+            pygame.draw.line(self.sc, pygame.Color('purple'), (x, y), (x + self.tile, y), 2)
+        if self.walls['right']:
+            pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y), (x + self.tile, y + self.tile), 2)
+        if self.walls['bottom']:
+            pygame.draw.line(self.sc, pygame.Color('purple'), (x + self.tile, y + self.tile), (x, y + self.tile), 2)
+        if self.walls['left']:
+            pygame.draw.line(self.sc, pygame.Color('purple'), (x, y + self.tile), (x, y), 2)
         
         if self.number is not None:
             text_surface = self.font.render(str(self.number), True, pygame.Color('white'))
@@ -50,39 +50,46 @@ class Cell:
         find_index = lambda x, y: x + y * self.cols
         return self.grid_cells[find_index(x, y)]
     
-    def verify_next_cells(self):
+    def verify_next_cells(self, filter=lambda cell: not cell.analyzed):
         neighbors = []
 
         # Verify if the cell has neighbors and if there are no walls
         if not self.walls['top']:
             top_cell = self.check_cell(self.x, self.y - 1)
-            if top_cell and top_cell.analyzed == False:
+            if top_cell and filter(top_cell):
                 neighbors.append(top_cell)
-                #top_cell.analyzed = True
 
         if not self.walls['right']:
             right_cell = self.check_cell(self.x + 1, self.y)
-            if right_cell and right_cell.analyzed == False:
+            if right_cell and filter(right_cell):
                 neighbors.append(right_cell)
-                #right_cell.analyzed = True
 
         if not self.walls['bottom']:
             bottom_cell = self.check_cell(self.x, self.y + 1)
-            if bottom_cell and bottom_cell.analyzed == False:
+            if bottom_cell and filter(bottom_cell):
                 neighbors.append(bottom_cell)
-               # bottom_cell.analyzed = True
 
         if not self.walls['left']:
             left_cell = self.check_cell(self.x - 1, self.y)
-            if left_cell and left_cell.analyzed == False:
+            if left_cell and filter(left_cell):
                 neighbors.append(left_cell)
-                #left_cell.analyzed = True
         
         self.analyzed = True
 
         return neighbors
+    
+    
+    def verify_next_cell_dfs(self):
+        next_cell = None
+        neighbors = self.verify_next_cells(lambda cell: cell.number is not None)
 
-        
+        if neighbors:
+            self.next_cell = min(neighbors, key=lambda cell: cell.number)
+            
+        return self.next_cell
+
+
+
     def check_neighbors(self):
         neighbors = []
         top = self.check_cell(self.x, self.y - 1)
