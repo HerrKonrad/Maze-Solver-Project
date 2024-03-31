@@ -3,7 +3,9 @@ import pygame_menu
 from random import choice
 from cell import Cell
 from maze_solver import Maze_Solver
-
+from time import sleep
+from maze_solver import Maze_Solver
+import sys
 # Initial values for TILE, cols and rows
 RES = WIDTH, HEIGHT = 1280, 720
 TILE = 50
@@ -12,10 +14,7 @@ cols, rows = WIDTH // TILE, HEIGHT // TILE
 def change_size(r, c):
     global TILE, cols, rows, WIDTH, HEIGHT
     cols, rows = c, r
-    print('WIDTH / cols:', WIDTH / cols)
-    print('HEIGHT / rows:', HEIGHT / rows)
     TILE = min(WIDTH // cols, HEIGHT // rows) 
-    print('TILE:', TILE)
 
 
 pygame.init()
@@ -24,7 +23,7 @@ font = pygame.font.Font(None, 28)
 sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 
-menu = pygame_menu.Menu('Welcome', 400, 300,
+menu = pygame_menu.Menu('Maze Configuration', 400, 300,
                        theme=pygame_menu.themes.THEME_BLUE)
 
 grid_cells = []
@@ -34,6 +33,13 @@ maze_solved = False
 start_cell = None
 end_cell = None
 current_cell = None
+
+resolutions = {
+    'BFS': Maze_Solver.bfs_resolution,
+    'DFS': Maze_Solver.dfs_resolution
+}
+
+resolution_times = {}
 
 def remove_walls(current, next):
     dx = current.x - next.x
@@ -78,8 +84,9 @@ def set_maze_size(value, size):
 
 
 def program_loop():
+    # Update the size of the maze based on the selected values in the menu
     change_size(rows, cols)
-    global current_cell, start_end_choosen, maze_solved, start_cell, end_cell, stack
+    global current_cell, start_end_choosen, maze_solved, start_cell, end_cell, stack, res
 
     print('Starting the program...')
     
@@ -103,6 +110,7 @@ def program_loop():
         [cell.draw() for cell in grid_cells]
         current_cell.visited = True
 
+        # Maze generation algorithm
         next_cell = current_cell.check_neighbors()
         if next_cell:
             next_cell.visited = True
@@ -116,18 +124,60 @@ def program_loop():
         # Now we can randomly choose the entry and exit cell
         if len(stack) == 0 and not start_end_choosen:
             start_cell, end_cell = choose_entry_exit()
-            print('Start cell:', start_cell.x, start_cell.y)
-            print('End cell:', end_cell.x, end_cell.y)
             start_end_choosen = True
 
         if start_end_choosen and not maze_solved:
             # Now we can start solving the maze
             print('Solving the maze...')
             maze_solver = Maze_Solver(grid_cells, start_cell, end_cell)
-            maze_solved = maze_solver.dfs_resolution()
-            maze_solver.create_dfs_path()
+            
+            for res_name, func_res in resolutions.items():
+                print(f"Resolution: {res_name}")
+                maze_solver.clear_resolution()
+                time_elapsed = func_res(maze_solver)
+                maze_solver.create_dfs_path()
+                if time_elapsed:
+                    print(f"Time elapsed during the {res_name} resolution: {time_elapsed}")
+                    resolution_times[res_name] = time_elapsed
+                [cell.draw() for cell in grid_cells]
+                # Write the number of the resolution on the top right corner
+                pygame.display.set_caption(f"Maze Solver - Resolution: {res_name}")
+                pygame.display.flip()
+                while True:
+                    event = pygame.event.wait()
+                    if event.type == pygame.KEYDOWN:
+                        break
+                pygame.event.clear()  # Clear any remaining events from the queue
+            
+            maze_solved = True
+            
+        
+        if maze_solved:
+            print('Maze solved')
+            # Clear the screen
+            sc.fill(pygame.Color('darkslategray'))
+            
+            # Write the resolution times on the screen
+            text = font.render('Resolution Times:', True, pygame.Color('white'))
+            sc.blit(text, (10, 10))
+            
+            y = 40
+            for res_name, time_elapsed in resolution_times.items():
+                text = font.render(f'{res_name}: {time_elapsed} seconds', True, pygame.Color('white'))
+                sc.blit(text, (10, y))
+                y += 30
+                
+            pygame.display.flip()     
+            while True:
+                    event = pygame.event.wait()
+                    if event.type == pygame.KEYDOWN:
+                        break
+            pygame.event.clear()  # Clear any remaining events from the queue
+            pygame.quit()
+            sys.exit()
 
         pygame.display.flip()
+        #clock.tick(120)
 
 rows = 10
 cols = 10
@@ -140,8 +190,8 @@ def set_cols(value, c):
   global cols
   cols = c
 
-menu.add.selector('Rows:', [('10', 10), ('20', 20), ('30', 30), ('40', 40), ('50', 50), ('60', 60), ('70', 70), ('80', 80)], onchange=set_rows)
-menu.add.selector('Cols:', [('10', 10), ('20', 20), ('30', 30), ('40', 40), ('50', 50), ('60', 60), ('70', 70), ('80', 80)], onchange=set_cols)
+menu.add.selector('Rows:', [('10', 10), ('20', 20), ('30', 30), ('40', 40), ('50', 50), ('60', 60), ('70', 70)], onchange=set_rows)
+menu.add.selector('Cols:', [('10', 10), ('20', 20), ('30', 30), ('40', 40), ('50', 50), ('60', 60), ('70', 70)], onchange=set_cols)
 menu.add.button('Start', program_loop)
 menu.add.button('Quit', pygame_menu.events.EXIT)
 menu.mainloop(sc)
