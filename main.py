@@ -12,14 +12,16 @@ TILE = 50
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 def change_size(r, c):
-    global TILE, cols, rows, WIDTH, HEIGHT
+    global TILE, cols, rows, WIDTH, HEIGHT, font
     cols, rows = c, r
     TILE = min(WIDTH // cols, HEIGHT // rows) 
+    font = pygame.font.Font(None, int(TILE / 1.5))
 
 
 pygame.init()
 pygame.display.set_caption('Maze Solver')
 font = pygame.font.Font(None, 28)
+font_letters = pygame.font.Font(None, 40)
 sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 
@@ -33,6 +35,7 @@ maze_solved = False
 start_cell = None
 end_cell = None
 current_cell = None
+show_maze_generation = True
 
 resolutions = {
     'BFS': Maze_Solver.bfs_resolution,
@@ -81,6 +84,29 @@ def set_maze_size(value, size):
     change_size(size)
     #TILE = size
 
+def generate_maze(show_generation=False):
+    global current_cell, start_cell, end_cell, stack
+    
+    while True:
+        current_cell.visited = True
+        # Maze generation algorithm
+        next_cell = current_cell.check_neighbors()
+        if next_cell:
+                next_cell.visited = True
+                stack.append(current_cell)
+                remove_walls(current_cell, next_cell)
+                current_cell = next_cell
+
+            
+        elif stack:
+                current_cell = stack.pop()
+        
+        if show_generation:
+            [cell.draw() for cell in grid_cells]
+            pygame.display.flip()
+        
+        if len(stack) == 0:
+            break
 
 
 def program_loop():
@@ -108,18 +134,9 @@ def program_loop():
                 exit()
 
         [cell.draw() for cell in grid_cells]
-        current_cell.visited = True
 
-        # Maze generation algorithm
-        next_cell = current_cell.check_neighbors()
-        if next_cell:
-            next_cell.visited = True
-            stack.append(current_cell)
-            remove_walls(current_cell, next_cell)
-            current_cell = next_cell
-        
-        elif stack:
-            current_cell = stack.pop()   
+        generate_maze(show_generation=show_maze_generation)
+          
         
         # Now we can randomly choose the entry and exit cell
         if len(stack) == 0 and not start_end_choosen:
@@ -158,12 +175,12 @@ def program_loop():
             sc.fill(pygame.Color('darkslategray'))
             
             # Write the resolution times on the screen
-            text = font.render('Resolution Times:', True, pygame.Color('white'))
+            text = font_letters.render('Resolution Times:', True, pygame.Color('white'))
             sc.blit(text, (10, 10))
             
             y = 40
             for res_name, time_elapsed in resolution_times.items():
-                text = font.render(f'{res_name}: {time_elapsed} seconds', True, pygame.Color('white'))
+                text = font_letters.render(f'{res_name}: {time_elapsed} seconds', True, pygame.Color('white'))
                 sc.blit(text, (10, y))
                 y += 30
                 
@@ -190,8 +207,13 @@ def set_cols(value, c):
   global cols
   cols = c
 
+def set_show_generation(value, show):
+    global show_maze_generation
+    show_maze_generation = show
+
 menu.add.selector('Rows:', [('10', 10), ('20', 20), ('30', 30), ('40', 40), ('50', 50), ('60', 60), ('70', 70)], onchange=set_rows)
 menu.add.selector('Cols:', [('10', 10), ('20', 20), ('30', 30), ('40', 40), ('50', 50), ('60', 60), ('70', 70)], onchange=set_cols)
+menu.add.selector('Show Generation:', [('Yes', True), ('No', False)], onchange=set_show_generation)
 menu.add.button('Start', program_loop)
 menu.add.button('Quit', pygame_menu.events.EXIT)
 menu.mainloop(sc)
