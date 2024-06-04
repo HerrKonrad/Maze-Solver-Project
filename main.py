@@ -38,8 +38,8 @@ current_cell = None
 show_maze_generation = True
 
 resolutions = {
-    'BFS': Maze_Solver.bfs_resolution,
-    'DFS': Maze_Solver.dfs_resolution
+    'DFS': Maze_Solver.dfs_resolution,
+    'BFS': Maze_Solver.bfs_resolution
 }
 
 resolution_times = {}
@@ -97,7 +97,6 @@ def generate_maze(show_generation=False):
                 remove_walls(current_cell, next_cell)
                 current_cell = next_cell
 
-            
         elif stack:
                 current_cell = stack.pop()
         
@@ -152,7 +151,7 @@ def program_loop():
                 print(f"Resolution: {res_name}")
                 maze_solver.clear_resolution()
                 time_elapsed = func_res(maze_solver)
-                maze_solver.create_dfs_path()
+                maze_solver.create_path()
                 if time_elapsed:
                     print(f"Time elapsed during the {res_name} resolution: {time_elapsed}")
                     resolution_times[res_name] = time_elapsed

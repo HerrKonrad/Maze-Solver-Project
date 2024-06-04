@@ -14,7 +14,7 @@ class Cell:
         self.font = font
         self.number = number
         self.analyzed = False
-        self.is_dfs_path = False
+        self.is_path = False
 
     def draw_current_cell(self):
         x, y = self.x * self.tile, self.y * self.tile
@@ -24,7 +24,7 @@ class Cell:
         
         x, y = self.x * self.tile, self.y * self.tile
 
-        if self.is_dfs_path:
+        if self.is_path:
             pygame.draw.rect(self.sc, pygame.Color('grey'), (x, y, self.tile, self.tile))
         elif self.visited:
             pygame.draw.rect(self.sc, pygame.Color('black'), (x, y, self.tile, self.tile))
@@ -82,13 +82,14 @@ class Cell:
         return neighbors
     
     
-    def verify_next_cell_dfs(self):
+    def verify_next_cell(self):
         next_cell = None
         neighbors = self.verify_next_cells(lambda cell: cell.number is not None)
 
         if neighbors:
             self.next_cell = min(neighbors, key=lambda cell: cell.number)
-            
+        
+                   
         return self.next_cell
 
 
